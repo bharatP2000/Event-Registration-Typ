@@ -9,10 +9,16 @@
 <body>
 
   <div id="app">
+    <div class="crest-row">
+      <span class="crest-line"></span>
+      <span class="crest-dot">&#10022;</span>
+      <span class="crest-line"></span>
+    </div>
+
     <div class="eyebrow">Registration &amp; Payment</div>
+    <p class="guidance" id="event-guidance"></p>
     <h1 class="event-name" id="event-name">Loading&hellip;</h1>
     <p class="event-datetime" id="event-datetime"></p>
-    <p class="subtitle">Fill in your details below — your seat is confirmed the moment payment goes through.</p>
 
     <div class="status-banner" id="status-banner"></div>
 
@@ -30,6 +36,12 @@
             <label for="mobile">Mobile number</label>
             <input type="tel" id="mobile" name="mobile" placeholder="10-digit mobile number" inputmode="numeric" maxlength="10" autocomplete="tel" required />
             <div class="field-error" id="err-mobile"></div>
+          </div>
+
+          <div class="field">
+            <label for="email">Email address</label>
+            <input type="email" id="email" name="email" placeholder="e.g. ananya@example.com" autocomplete="email" required />
+            <div class="field-error" id="err-email"></div>
           </div>
 
           <div class="field" style="margin-bottom: 0;">
@@ -55,14 +67,25 @@
       <!-- Confirmation state (shown after verified payment) -->
       <div class="confirmation" id="confirmation">
         <div class="mark">&#10003;</div>
-        <h2>You're registered!</h2>
-        <p id="confirm-name"></p>
-        <p id="confirm-area"></p>
+        <h2>You're all set!</h2>
+        <p class="confirm-sub">Thank you for registering &mdash; we can't wait to see you there.</p>
+        <div class="confirm-card">
+          <div class="confirm-row"><span>Registration No.</span><strong id="confirm-id"></strong></div>
+          <div class="confirm-row"><span>Name</span><strong id="confirm-name"></strong></div>
+          <div class="confirm-row"><span>Area</span><strong id="confirm-area"></strong></div>
+        </div>
+        <p class="confirm-email-note" id="confirm-email-note"></p>
         <div class="ref" id="confirm-ref"></div>
       </div>
     </div>
 
     <footer class="note">Payments are processed securely by Razorpay. Your card and bank details never touch this server.</footer>
+
+    <div class="org-strip">
+      <div class="org-line">Organised by</div>
+      <div class="org-name" id="event-organizer"></div>
+    </div>
+    <div class="tagline-band" id="event-tagline"></div>
   </div>
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

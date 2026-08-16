@@ -47,6 +47,14 @@ Edit `.env`:
   `North Zone,South Zone,East Zone,West Zone,Central`.
 - `ADMIN_EXPORT_KEY` — a private key you make up; required to download the
   Excel export. Treat it like a password.
+- `EVENT_DATE` / `EVENT_TIME` — shown under the event name on the page.
+- `EVENT_GUIDANCE` / `EVENT_ORGANIZER` / `EVENT_TAGLINE` — optional lines
+  shown above and below the form (leave any of them blank to hide it).
+- `EMAIL_USER` / `EMAIL_PASS` / `EMAIL_SERVICE` — for sending the
+  confirmation email after payment. Simplest setup is a Gmail address plus
+  an **App Password** (not your normal Gmail password) generated at
+  https://myaccount.google.com/apppasswords. Leave these blank to skip
+  sending emails — registration still works, it just won't email anyone.
 
 ## 3. Add a background image (optional)
 
@@ -89,8 +97,19 @@ GET /api/export?key=YOUR_ADMIN_EXPORT_KEY
 ```
 
 Open that URL in a browser (or `curl -o registrations.xlsx "http://localhost:3000/api/export?key=..."`)
-and it downloads an `.xlsx` file with every paid registration: name, mobile,
-area, amount, payment ID, order ID, and paid-at timestamp.
+and it downloads an `.xlsx` file with every paid registration: registration
+number, name, mobile, email, area, amount, payment ID, order ID, and paid-at
+timestamp.
+
+## Registration numbers
+
+Every registration gets a simple sequential number (1, 2, 3, ...) the moment
+it's created, stored as `id` on the record. It's assigned in memory when the
+server starts (continuing from the highest existing id in
+`data/registrations.json`) and handed out synchronously, so two people
+registering at the same instant never collide. This number is shown on the
+confirmation screen, included in the confirmation email, and is the first
+column in the Excel export.
 
 ## Deploying
 

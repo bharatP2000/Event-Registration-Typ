@@ -32,11 +32,22 @@ function writeAll(records) {
   return writeQueue;
 }
 
+// Simple 1, 2, 3... registration numbers. Computed once at startup from
+// whatever is already on disk, then incremented in memory. Node is
+// single-threaded and nextId++ happens synchronously (before any await),
+// so concurrent requests can never be handed the same id.
+let nextId = (() => {
+  const records = readAll();
+  const maxId = records.reduce((m, r) => Math.max(m, r.id || 0), 0);
+  return maxId + 1;
+})();
+
 async function addRecord(record) {
   const records = readAll();
-  records.push(record);
+  const withId = { id: nextId++, ...record };
+  records.push(withId);
   await writeAll(records);
-  return record;
+  return withId;
 }
 
 async function updateRecordByOrderId(orderId, patch) {
@@ -54,7 +65,9 @@ function getByOrderId(orderId) {
 }
 
 function getPaidRecords() {
-  return readAll().filter((r) => r.status === 'paid');
+  return readAll()
+    .filter((r) => r.status === 'paid')
+    .sort((a, b) => a.id - b.id);
 }
 
 module.exports = {

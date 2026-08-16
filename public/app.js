@@ -3,15 +3,23 @@
   const payBtn = document.getElementById('pay-btn');
   const nameInput = document.getElementById('name');
   const mobileInput = document.getElementById('mobile');
+  const emailInput = document.getElementById('email');
   const areaSelect = document.getElementById('area');
   const amountDisplay = document.getElementById('amount-display');
   const eventNameEl = document.getElementById('event-name');
+  const eventGuidanceEl = document.getElementById('event-guidance');
   const eventDatetimeEl = document.getElementById('event-datetime');
+  const eventOrganizerEl = document.getElementById('event-organizer');
+  const eventTaglineEl = document.getElementById('event-tagline');
   const statusBanner = document.getElementById('status-banner');
   const confirmation = document.getElementById('confirmation');
+  const confirmId = document.getElementById('confirm-id');
   const confirmName = document.getElementById('confirm-name');
   const confirmArea = document.getElementById('confirm-area');
   const confirmRef = document.getElementById('confirm-ref');
+  const confirmEmailNote = document.getElementById('confirm-email-note');
+
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let CONFIG = null;
 
@@ -26,7 +34,7 @@
     document.getElementById('err-' + id).textContent = message || '';
   }
   function clearFieldErrors() {
-    ['name', 'mobile', 'area'].forEach((id) => fieldError(id, ''));
+    ['name', 'mobile', 'email', 'area'].forEach((id) => fieldError(id, ''));
   }
 
   async function loadConfig() {
@@ -35,9 +43,24 @@
       CONFIG = await res.json();
 
       eventNameEl.textContent = CONFIG.eventName;
+
+      if (CONFIG.eventGuidance) {
+        eventGuidanceEl.textContent = CONFIG.eventGuidance;
+        eventGuidanceEl.style.display = 'block';
+      }
+
       if (CONFIG.eventDate || CONFIG.eventTime) {
         eventDatetimeEl.textContent = [CONFIG.eventDate, CONFIG.eventTime].filter(Boolean).join(' \u2022 ');
       }
+
+      if (CONFIG.eventOrganizer) {
+        eventOrganizerEl.textContent = CONFIG.eventOrganizer;
+      }
+      if (CONFIG.eventTagline) {
+        eventTaglineEl.textContent = CONFIG.eventTagline;
+        eventTaglineEl.style.display = 'block';
+      }
+
       amountDisplay.textContent = '\u20B9' + CONFIG.feeInr;
 
       areaSelect.innerHTML = '<option value="" disabled selected>Select your area</option>';
@@ -59,6 +82,7 @@
 
     const name = nameInput.value.trim();
     const mobile = mobileInput.value.trim();
+    const email = emailInput.value.trim();
     const area = areaSelect.value;
 
     if (name.length < 2) {
@@ -69,11 +93,15 @@
       fieldError('mobile', 'Enter a valid 10-digit mobile number.');
       ok = false;
     }
+    if (!EMAIL_REGEX.test(email)) {
+      fieldError('email', 'Enter a valid email address.');
+      ok = false;
+    }
     if (!area) {
       fieldError('area', 'Please select an area.');
       ok = false;
     }
-    return ok ? { name, mobile, area } : null;
+    return ok ? { name, mobile, email, area } : null;
   }
 
   async function handleSubmit(e) {
@@ -114,8 +142,9 @@
         prefill: {
           name: data.name,
           contact: data.mobile,
+          email: data.email,
         },
-        theme: { color: '#c9a24b' },
+        theme: { color: '#8a1c2e' },
         handler: async function (response) {
           await verifyPayment(response, data);
         },
@@ -164,8 +193,10 @@
 
       form.style.display = 'none';
       confirmation.classList.add('show');
-      confirmName.textContent = data.name + ' \u2014 ' + data.mobile;
+      confirmId.textContent = '#' + result.registration.id;
+      confirmName.textContent = data.name;
       confirmArea.textContent = data.area;
+      confirmEmailNote.textContent = 'A confirmation has been sent to ' + data.email + '.';
       confirmRef.textContent = 'Payment ID: ' + response.razorpay_payment_id;
     } catch (err) {
       showBanner('Payment succeeded but verification failed. Please contact support with your payment ID.', 'error');
