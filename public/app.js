@@ -5,6 +5,7 @@
   const mobileInput = document.getElementById('mobile');
   // const emailInput = document.getElementById('email');
   const areaSelect = document.getElementById('area');
+  const memberOfSelect = document.getElementById('memberOf');
   const amountDisplay = document.getElementById('amount-display');
   const eventNameEl = document.getElementById('event-name');
   const eventGuidanceEl = document.getElementById('event-guidance');
@@ -16,6 +17,7 @@
   const confirmId = document.getElementById('confirm-id');
   const confirmName = document.getElementById('confirm-name');
   const confirmArea = document.getElementById('confirm-area');
+  const confirmMemberOf = document.getElementById('confirm-memberOf');
   const confirmRef = document.getElementById('confirm-ref');
   // const confirmEmailNote = document.getElementById('confirm-email-note');
 
@@ -34,7 +36,7 @@
     document.getElementById('err-' + id).textContent = message || '';
   }
   function clearFieldErrors() {
-    ['name', 'mobile', 'area'].forEach((id) => fieldError(id, ''));
+    ['name', 'mobile', 'area', 'memberOf'].forEach((id) => fieldError(id, ''));
   }
 
   async function loadConfig() {
@@ -84,6 +86,7 @@
     const mobile = mobileInput.value.trim();
     // const email = emailInput.value.trim();
     const area = areaSelect.value;
+    const memberOf = memberOfSelect.value;
 
     if (name.length < 2) {
       fieldError('name', 'Please enter your full name.');
@@ -100,7 +103,12 @@
       ok = false;
     }
 
-    return ok ? { name, mobile, area } : null;
+    if (!memberOf) {
+      fieldError('memberOf', 'Please select Member Of.');
+      ok = false;
+    }
+
+    return ok ? { name, mobile, area, memberOf } : null;
   }
 
   async function handleSubmit(e) {
@@ -194,6 +202,7 @@
       confirmId.textContent = '#' + result.registration.id;
       confirmName.textContent = data.name;
       confirmArea.textContent = data.area;
+      confirmMemberOf.textContent = data.memberOf;
       // confirmEmailNote.textContent = 'A confirmation has been sent to ' + data.email + '.';
       confirmRef.textContent = 'Payment ID: ' + response.razorpay_payment_id;
     } catch (err) {

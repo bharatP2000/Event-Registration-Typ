@@ -222,6 +222,11 @@
         <option value="created">Unpaid</option>
       </select>
       <select id="area-filter"><option value="">All areas</option></select>
+      <select id="member-of-filter">
+        <option value="">All Member Of</option>
+        <option value="TYP">TYP</option>
+        <option value="TKM">TKM</option>
+      </select>
     </div>
 
     <div id="err"></div>
@@ -234,6 +239,7 @@
             <th>Name</th>
             <th>Mobile</th>
             <th>Area</th>
+            <th>Member Of</th>
             <th>Status</th>
             <th>Amount</th>
             <th>Payment ID</th>
@@ -262,6 +268,7 @@
   const searchEl = document.getElementById('search');
   const statusFilterEl = document.getElementById('status-filter');
   const areaFilterEl = document.getElementById('area-filter');
+  const memberOfFilterEl = document.getElementById('member-of-filter');
 
   let ADMIN_KEY = sessionStorage.getItem('adminKey') || '';
   let allRecords = [];
@@ -318,10 +325,12 @@
     const q = searchEl.value.trim().toLowerCase();
     const statusFilter = statusFilterEl.value;
     const areaFilter = areaFilterEl.value;
+    const memberOfFilter = memberOfFilterEl.value;
 
     const filtered = allRecords.filter((r) => {
       if (statusFilter && r.status !== statusFilter) return false;
       if (areaFilter && r.area !== areaFilter) return false;
+      if (memberOfFilter && r.memberOf !== memberOfFilter) return false;
       if (q && !((r.name || '').toLowerCase().includes(q) || (r.mobile || '').includes(q))) return false;
       return true;
     });
@@ -339,6 +348,7 @@
         <td>${escapeHtml(r.name)}</td>
         <td>${escapeHtml(r.mobile)}</td>
         <td>${escapeHtml(r.area)}</td>
+        <td>${escapeHtml(r.memberOf)}</td>
         <td><span class="badge ${r.status === 'paid' ? 'paid' : 'created'}">${escapeHtml(r.status)}</span></td>
         <td>&#8377;${escapeHtml(r.amount_inr)}</td>
         <td>${escapeHtml(r.razorpay_payment_id || '—')}</td>
@@ -369,6 +379,7 @@
   searchEl.addEventListener('input', renderRows);
   statusFilterEl.addEventListener('change', renderRows);
   areaFilterEl.addEventListener('change', renderRows);
+  memberOfFilterEl.addEventListener('change', renderRows);
 
   if (ADMIN_KEY) {
     loadData();

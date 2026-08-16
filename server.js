@@ -43,6 +43,7 @@ const razorpay = new Razorpay({
 });
 
 const MOBILE_REGEX = /^[6-9]\d{9}$/;
+const MEMBER_OF_OPTIONS = ['TYP', 'TKM'];
 
 // ---- Public config ----
 app.get('/api/config', (req, res) => {
@@ -55,6 +56,7 @@ app.get('/api/config', (req, res) => {
     eventTagline: EVENT_TAGLINE,
     feeInr: EVENT_FEE_INR,
     areas: EVENT_AREAS,
+    memberOfOptions: MEMBER_OF_OPTIONS,
     razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
   });
 });
@@ -62,7 +64,7 @@ app.get('/api/config', (req, res) => {
 // ---- Step 1: Create registration + Razorpay order ----
 app.post('/api/register', async (req, res) => {
   try {
-    const { name, mobile, area } = req.body || {};
+    const { name, mobile, area, memberOf } = req.body || {};
 
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
       return res.status(400).json({
@@ -82,6 +84,12 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
+    if (!memberOf || !MEMBER_OF_OPTIONS.includes(memberOf)) {
+      return res.status(400).json({
+        error: 'Please select Member Of.',
+      });
+    }
+
     const amountPaise = Math.round(EVENT_FEE_INR * 100);
 
     const order = await razorpay.orders.create({
@@ -92,6 +100,7 @@ app.post('/api/register', async (req, res) => {
         name: name.trim(),
         mobile: mobile.trim(),
         area,
+        memberOf,
       },
     });
 
@@ -99,6 +108,7 @@ app.post('/api/register', async (req, res) => {
       name: name.trim(),
       mobile: mobile.trim(),
       area,
+      memberOf,
       amount_inr: EVENT_FEE_INR,
       razorpay_order_id: order.id,
       razorpay_payment_id: null,
@@ -202,6 +212,7 @@ app.get('/api/export', async (req, res) => {
       { header: 'Name', key: 'name', width: 28 },
       { header: 'Mobile No', key: 'mobile', width: 16 },
       { header: 'Area', key: 'area', width: 20 },
+      { header: 'Member Of', key: 'memberOf', width: 14 },
       { header: 'Amount (INR)', key: 'amount_inr', width: 14 },
       { header: 'Payment ID', key: 'razorpay_payment_id', width: 26 },
       { header: 'Order ID', key: 'razorpay_order_id', width: 26 },

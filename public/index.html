@@ -47,12 +47,22 @@
             <div class="field-error" id="err-email"></div>
           </div> -->
 
-          <div class="field" style="margin-bottom: 0;">
+          <div class="field">
             <label for="area">Area</label>
             <select id="area" name="area" required>
               <option value="" disabled selected>Select your area</option>
             </select>
             <div class="field-error" id="err-area"></div>
+          </div>
+
+          <div class="field" style="margin-bottom: 0;">
+            <label for="memberOf">Member Of</label>
+            <select id="memberOf" name="memberOf" required>
+              <option value="" disabled selected>Select Member Of</option>
+              <option value="TYP">TYP</option>
+              <option value="TKM">TKM</option>
+            </select>
+            <div class="field-error" id="err-memberOf"></div>
           </div>
         </div>
 
@@ -76,6 +86,7 @@
           <div class="confirm-row"><span>Registration No.</span><strong id="confirm-id"></strong></div>
           <div class="confirm-row"><span>Name</span><strong id="confirm-name"></strong></div>
           <div class="confirm-row"><span>Area</span><strong id="confirm-area"></strong></div>
+          <div class="confirm-row"><span>Member Of</span><strong id="confirm-memberOf"></strong></div>
         </div>
         <p class="confirm">Please share this screenshot here:</p>
         <p><a href="https://chat.whatsapp.com/I3NVin7wE9A0v1UaXPcAAh?s=cl&p=a&ilr=4" target="_blank">Join the WhatsApp group</a></p>
