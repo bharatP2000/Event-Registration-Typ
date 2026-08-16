@@ -89,18 +89,17 @@
       fieldError('name', 'Please enter your full name.');
       ok = false;
     }
+
     if (!/^[6-9]\d{9}$/.test(mobile)) {
       fieldError('mobile', 'Enter a valid 10-digit mobile number.');
       ok = false;
     }
-    if (!EMAIL_REGEX.test(email)) {
-      fieldError('email', 'Enter a valid email address.');
-      ok = false;
-    }
+
     if (!area) {
       fieldError('area', 'Please select an area.');
       ok = false;
     }
+
     return ok ? { name, mobile, email, area } : null;
   }
 
