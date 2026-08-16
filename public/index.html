@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Event Registration</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="app">
+    <div class="eyebrow">Registration &amp; Payment</div>
+    <h1 class="event-name" id="event-name">Loading&hellip;</h1>
+    <p class="event-datetime" id="event-datetime"></p>
+    <p class="subtitle">Fill in your details below — your seat is confirmed the moment payment goes through.</p>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="ticket">
+      <!-- Form state -->
+      <form id="reg-form" novalidate>
+        <div class="ticket-body">
+          <div class="field">
+            <label for="name">Full name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Ananya Sharma" autocomplete="name" required />
+            <div class="field-error" id="err-name"></div>
+          </div>
+
+          <div class="field">
+            <label for="mobile">Mobile number</label>
+            <input type="tel" id="mobile" name="mobile" placeholder="10-digit mobile number" inputmode="numeric" maxlength="10" autocomplete="tel" required />
+            <div class="field-error" id="err-mobile"></div>
+          </div>
+
+          <div class="field" style="margin-bottom: 0;">
+            <label for="area">Area</label>
+            <select id="area" name="area" required>
+              <option value="" disabled selected>Select your area</option>
+            </select>
+            <div class="field-error" id="err-area"></div>
+          </div>
+        </div>
+
+        <div class="perforation"></div>
+
+        <div class="stub">
+          <div>
+            <div class="amount-label">Registration fee</div>
+            <div class="amount" id="amount-display">&#8377;&mdash;</div>
+          </div>
+          <button type="submit" id="pay-btn">Register &amp; Pay</button>
+        </div>
+      </form>
+
+      <!-- Confirmation state (shown after verified payment) -->
+      <div class="confirmation" id="confirmation">
+        <div class="mark">&#10003;</div>
+        <h2>You're registered!</h2>
+        <p id="confirm-name"></p>
+        <p id="confirm-area"></p>
+        <div class="ref" id="confirm-ref"></div>
+      </div>
+    </div>
+
+    <footer class="note">Payments are processed securely by Razorpay. Your card and bank details never touch this server.</footer>
+  </div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
