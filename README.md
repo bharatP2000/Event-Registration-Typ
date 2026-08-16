@@ -117,11 +117,59 @@ This is a plain Node/Express app, so it runs as-is on Render, Railway,
 Fly.io, a VPS, etc. Two things to remember in production:
 
 - Set all the `.env` values as real environment variables on your host.
-- `data/registrations.json` lives on local disk — if your host has an
-  ephemeral filesystem (e.g. most serverless platforms), point `storage.js`
-  at a real database instead so registrations survive deploys/restarts.
 - Switch `RAZORPAY_KEY_ID`/`SECRET` to your live keys only once you're ready
   to take real payments.
+
+### ⚠️ Persistent storage — read this before you deploy
+
+By default this app saves registrations to a local JSON file
+(`data/registrations.json`). **Render and Railway both give services an
+ephemeral filesystem by default** — any file written during normal
+operation is silently wiped on the next redeploy or restart (and on
+Render's free tier, also whenever the service spins down from inactivity
+and wakes back up). If you skip this step, registrations will appear to
+save, then vanish.
+
+#### Option A — free tier: Upstash Redis (recommended, works on Render/Railway free tiers)
+
+`storage.js` automatically switches to [Upstash](https://console.upstash.com)
+Redis whenever its two env vars are set — no other code changes needed.
+Upstash's free tier (256 MB, 500K commands/month) needs no credit card and
+is far more than a single event needs.
+
+1. Sign up at https://console.upstash.com and create a Redis database
+   (any region close to your host is fine).
+2. On the database's dashboard, copy the **REST URL** and **REST TOKEN**.
+3. Add them to your host's environment variables:
+   ```
+   UPSTASH_REDIS_REST_URL=https://xxxxx.upstash.io
+   UPSTASH_REDIS_REST_TOKEN=xxxxxxxxxxxx
+   ```
+4. Redeploy. Your server log will print `Using Upstash Redis for
+   persistent storage.` on startup — check your host's logs to confirm.
+5. Verify it's really working: submit one real test registration, then
+   open `/admin` and confirm it shows up. Restart the service (or wait for
+   a free-tier spin-down/wake-up) and refresh `/admin` again — the record
+   should still be there.
+
+If these env vars are left blank, the app quietly falls back to the local
+JSON file — handy for local development, but do **not** deploy without
+setting them on a host with an ephemeral filesystem.
+
+#### Option B — paid tier: a persistent disk/volume
+
+If you're on a paid Render or Railway plan, you can skip Upstash and mount
+real disk instead:
+
+**Render:** Service → **Disks** → **Add Disk** (Starter plan or above —
+Free services can't attach disks at all) → set a mount path, e.g.
+`/var/data` → add env var `DATA_DIR=/var/data` → redeploy.
+
+**Railway:** Service → **Volumes** → **New Volume** (Hobby/Pro plan) → set
+a mount path, e.g. `/data` → add env var `DATA_DIR=/data` → redeploy.
+
+`storage.js` uses the JSON file at `DATA_DIR` whenever the Upstash vars
+above aren't set, so this and Option A never conflict — just pick one.
 
 ## Security notes
 

@@ -142,7 +142,7 @@ app.post('/api/verify', async (req, res) => {
       });
     }
 
-    const existing = storage.getByOrderId(razorpay_order_id);
+    const existing = await storage.getByOrderId(razorpay_order_id);
 
     if (!existing) {
       return res.status(404).json({
@@ -192,7 +192,7 @@ app.get('/api/export', async (req, res) => {
       );
     }
 
-    const records = storage.getPaidRecords();
+    const records = await storage.getPaidRecords();
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Registrations');
@@ -232,6 +232,36 @@ app.get('/api/export', async (req, res) => {
     console.error('export error:', err);
     res.status(500).send('Could not generate export.');
   }
+});
+
+// ---- Admin: JSON data for the dashboard (all statuses, not just paid) ----
+app.get('/api/admin/registrations', async (req, res) => {
+  if (req.query.key !== ADMIN_EXPORT_KEY) {
+    return res.status(403).json({ error: 'Forbidden: invalid or missing admin key.' });
+  }
+
+  try {
+    const records = (await storage.readAll()).sort((a, b) => b.id - a.id);
+    const paid = records.filter((r) => r.status === 'paid');
+
+    res.json({
+      eventName: EVENT_NAME,
+      total: records.length,
+      paidCount: paid.length,
+      pendingCount: records.length - paid.length,
+      totalRevenue: paid.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
+      areas: EVENT_AREAS,
+      records,
+    });
+  } catch (err) {
+    console.error('admin list error:', err);
+    res.status(500).json({ error: 'Could not load registrations.' });
+  }
+});
+
+// ---- Admin dashboard page ----
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 app.listen(PORT, () => {

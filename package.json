@@ -9,11 +9,12 @@
     "dev": "node server.js"
   },
   "dependencies": {
-    "razorpay": "^2.9.4",
-    "nodemailer": "^6.9.14",
-    "express": "^4.19.2",
+    "@upstash/redis": "^1.38.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
-    "cors": "^2.8.5"
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.14",
+    "razorpay": "^2.9.4"
   }
 }

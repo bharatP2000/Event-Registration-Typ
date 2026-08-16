@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin · Registrations</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ink: #3a2415;
+    --ink-soft: #6b4f2e;
+    --paper: #fffaf0;
+    --parchment: #f6ecd2;
+    --gold: #b6862c;
+    --maroon: #7a1425;
+    --maroon-deep: #4f0e19;
+    --danger: #c0392b;
+    --ok: #2f7a3d;
+    --radius: 12px;
+    --border: rgba(122, 20, 37, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(180deg, #fffaf0 0%, #f6ecd2 100%);
+    padding: 20px 16px 60px;
+  }
+
+  #gate {
+    max-width: 380px;
+    margin: 12vh auto 0;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    box-shadow: 0 10px 30px rgba(74, 30, 15, 0.08);
+    text-align: center;
+  }
+  #gate h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    margin: 0 0 6px;
+    color: var(--maroon-deep);
+  }
+  #gate p { color: var(--ink-soft); font-size: 13px; margin: 0 0 18px; }
+  #gate input {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 15px;
+    margin-bottom: 10px;
+    background: #fff;
+  }
+  #gate button, .btn {
+    width: 100%;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--maroon);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  #gate button:hover, .btn:hover { background: var(--maroon-deep); }
+  #gate-error { color: var(--danger); font-size: 13px; min-height: 18px; margin-top: 8px; }
+
+  #dashboard { display: none; max-width: 1180px; margin: 0 auto; }
+
+  .top-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .top-row h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    margin: 0;
+    color: var(--maroon-deep);
+  }
+  .top-actions { display: flex; gap: 8px; }
+  .top-actions button, .top-actions a {
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .top-actions a.export { background: var(--maroon); color: #fff; border-color: var(--maroon); }
+  .top-actions a.export:hover { background: var(--maroon-deep); }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .stat {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    color: var(--maroon-deep);
+  }
+  .stat .l { font-size: 12px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .filters input, .filters select {
+    padding: 9px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .filters input { flex: 1; min-width: 180px; }
+
+  .table-wrap {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: auto;
+    max-height: 62vh;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; white-space: nowrap; }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--parchment);
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+  }
+  tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:hover { background: rgba(182, 134, 44, 0.06); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .badge.paid { background: rgba(47, 122, 61, 0.12); color: var(--ok); }
+  .badge.created { background: rgba(192, 57, 43, 0.1); color: var(--danger); }
+
+  #empty { text-align: center; padding: 40px 10px; color: var(--ink-soft); font-size: 14px; display: none; }
+  #err { color: var(--danger); font-size: 13px; margin-bottom: 10px; display: none; }
+  .muted { color: var(--ink-soft); font-size: 12px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <h1>Admin access</h1>
+    <p>Enter the admin key to view registrations.</p>
+    <input type="password" id="key-input" placeholder="Admin key" autocomplete="off" />
+    <button id="key-submit">View dashboard</button>
+    <div id="gate-error"></div>
+  </div>
+
+  <div id="dashboard">
+    <div class="top-row">
+      <h1 id="dash-title">Registrations</h1>
+      <div class="top-actions">
+        <button id="refresh-btn">&#8635; Refresh</button>
+        <a id="export-link" class="export" href="#">&#8681; Export paid (Excel)</a>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n" id="stat-total">&mdash;</div><div class="l">Total submissions</div></div>
+      <div class="stat"><div class="n" id="stat-paid">&mdash;</div><div class="l">Paid / confirmed</div></div>
+      <div class="stat"><div class="n" id="stat-pending">&mdash;</div><div class="l">Started, unpaid</div></div>
+      <div class="stat"><div class="n" id="stat-revenue">&mdash;</div><div class="l">Revenue collected</div></div>
+    </div>
+
+    <div class="filters">
+      <input type="text" id="search" placeholder="Search by name or mobile number&hellip;" />
+      <select id="status-filter">
+        <option value="">All statuses</option>
+        <option value="paid">Paid</option>
+        <option value="created">Unpaid</option>
+      </select>
+      <select id="area-filter"><option value="">All areas</option></select>
+    </div>
+
+    <div id="err"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reg #</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Area</th>
+            <th>Status</th>
+            <th>Amount</th>
+            <th>Payment ID</th>
+            <th>Order ID</th>
+            <th>Registered at</th>
+            <th>Paid at</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="empty">No registrations match these filters.</div>
+    </div>
+    <div class="muted">Data reflects <code>data/registrations.json</code> on the server at the time of the last refresh.</div>
+  </div>
+
+<script>
+(function () {
+  const gate = document.getElementById('gate');
+  const dashboard = document.getElementById('dashboard');
+  const keyInput = document.getElementById('key-input');
+  const keySubmit = document.getElementById('key-submit');
+  const gateError = document.getElementById('gate-error');
+  const rowsEl = document.getElementById('rows');
+  const emptyEl = document.getElementById('empty');
+  const errEl = document.getElementById('err');
+  const searchEl = document.getElementById('search');
+  const statusFilterEl = document.getElementById('status-filter');
+  const areaFilterEl = document.getElementById('area-filter');
+
+  let ADMIN_KEY = sessionStorage.getItem('adminKey') || '';
+  let allRecords = [];
+
+  function fmtDate(iso) {
+    if (!iso) return '&mdash;';
+    try {
+      return new Date(iso).toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+      });
+    } catch (e) { return iso; }
+  }
+
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  async function loadData() {
+    errEl.style.display = 'none';
+    try {
+      const res = await fetch('/api/admin/registrations?key=' + encodeURIComponent(ADMIN_KEY));
+      if (res.status === 403) {
+        sessionStorage.removeItem('adminKey');
+        showGate('Invalid admin key.');
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not load data.');
+
+      document.getElementById('dash-title').textContent = data.eventName + ' — Registrations';
+      document.getElementById('stat-total').textContent = data.total;
+      document.getElementById('stat-paid').textContent = data.paidCount;
+      document.getElementById('stat-pending').textContent = data.pendingCount;
+      document.getElementById('stat-revenue').textContent = '\u20B9' + data.totalRevenue.toLocaleString('en-IN');
+      document.getElementById('export-link').href = '/api/export?key=' + encodeURIComponent(ADMIN_KEY);
+
+      areaFilterEl.innerHTML = '<option value="">All areas</option>' +
+        (data.areas || []).map((a) => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+
+      allRecords = data.records || [];
+      renderRows();
+
+      gate.style.display = 'none';
+      dashboard.style.display = 'block';
+    } catch (err) {
+      errEl.textContent = err.message || 'Could not reach the server.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function renderRows() {
+    const q = searchEl.value.trim().toLowerCase();
+    const statusFilter = statusFilterEl.value;
+    const areaFilter = areaFilterEl.value;
+
+    const filtered = allRecords.filter((r) => {
+      if (statusFilter && r.status !== statusFilter) return false;
+      if (areaFilter && r.area !== areaFilter) return false;
+      if (q && !((r.name || '').toLowerCase().includes(q) || (r.mobile || '').includes(q))) return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      rowsEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    rowsEl.innerHTML = filtered.map((r) => `
+      <tr>
+        <td>#${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(r.name)}</td>
+        <td>${escapeHtml(r.mobile)}</td>
+        <td>${escapeHtml(r.area)}</td>
+        <td><span class="badge ${r.status === 'paid' ? 'paid' : 'created'}">${escapeHtml(r.status)}</span></td>
+        <td>&#8377;${escapeHtml(r.amount_inr)}</td>
+        <td>${escapeHtml(r.razorpay_payment_id || '—')}</td>
+        <td>${escapeHtml(r.razorpay_order_id || '—')}</td>
+        <td>${fmtDate(r.created_at)}</td>
+        <td>${fmtDate(r.paid_at)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function showGate(message) {
+    gate.style.display = 'block';
+    dashboard.style.display = 'none';
+    gateError.textContent = message || '';
+    keyInput.focus();
+  }
+
+  keySubmit.addEventListener('click', () => {
+    const val = keyInput.value.trim();
+    if (!val) { gateError.textContent = 'Enter the admin key.'; return; }
+    ADMIN_KEY = val;
+    sessionStorage.setItem('adminKey', val);
+    loadData();
+  });
+  keyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') keySubmit.click(); });
+
+  document.getElementById('refresh-btn').addEventListener('click', loadData);
+  searchEl.addEventListener('input', renderRows);
+  statusFilterEl.addEventListener('change', renderRows);
+  areaFilterEl.addEventListener('change', renderRows);
+
+  if (ADMIN_KEY) {
+    loadData();
+  } else {
+    showGate();
+  }
+})();
+</script>
+</body>
+</html>
