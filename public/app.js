@@ -3,7 +3,7 @@
   const payBtn = document.getElementById('pay-btn');
   const nameInput = document.getElementById('name');
   const mobileInput = document.getElementById('mobile');
-  const emailInput = document.getElementById('email');
+  // const emailInput = document.getElementById('email');
   const areaSelect = document.getElementById('area');
   const amountDisplay = document.getElementById('amount-display');
   const eventNameEl = document.getElementById('event-name');
@@ -17,9 +17,9 @@
   const confirmName = document.getElementById('confirm-name');
   const confirmArea = document.getElementById('confirm-area');
   const confirmRef = document.getElementById('confirm-ref');
-  const confirmEmailNote = document.getElementById('confirm-email-note');
+  // const confirmEmailNote = document.getElementById('confirm-email-note');
 
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   let CONFIG = null;
 
@@ -82,7 +82,7 @@
 
     const name = nameInput.value.trim();
     const mobile = mobileInput.value.trim();
-    const email = emailInput.value.trim();
+    // const email = emailInput.value.trim();
     const area = areaSelect.value;
 
     if (name.length < 2) {
@@ -100,7 +100,7 @@
       ok = false;
     }
 
-    return ok ? { name, mobile, email, area } : null;
+    return ok ? { name, mobile, area } : null;
   }
 
   async function handleSubmit(e) {
@@ -141,7 +141,6 @@
         prefill: {
           name: data.name,
           contact: data.mobile,
-          email: data.email,
         },
         theme: { color: '#8a1c2e' },
         handler: async function (response) {
@@ -195,7 +194,7 @@
       confirmId.textContent = '#' + result.registration.id;
       confirmName.textContent = data.name;
       confirmArea.textContent = data.area;
-      confirmEmailNote.textContent = 'A confirmation has been sent to ' + data.email + '.';
+      // confirmEmailNote.textContent = 'A confirmation has been sent to ' + data.email + '.';
       confirmRef.textContent = 'Payment ID: ' + response.razorpay_payment_id;
     } catch (err) {
       showBanner('Payment succeeded but verification failed. Please contact support with your payment ID.', 'error');
