@@ -34,7 +34,7 @@
     document.getElementById('err-' + id).textContent = message || '';
   }
   function clearFieldErrors() {
-    ['name', 'mobile', 'email', 'area'].forEach((id) => fieldError(id, ''));
+    ['name', 'mobile', 'area'].forEach((id) => fieldError(id, ''));
   }
 
   async function loadConfig() {
