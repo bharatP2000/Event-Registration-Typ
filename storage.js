@@ -109,25 +109,14 @@ async function addRecord(record) {
   });
 }
 
-async function updateRecordByOrderId(orderId, patch) {
-  return serialized(async () => {
-    const records = await readAllRaw();
-    const idx = records.findIndex((r) => r.razorpay_order_id === orderId);
-    if (idx === -1) return null;
-    records[idx] = { ...records[idx], ...patch };
-    await writeAllRaw(records);
-    return records[idx];
-  });
+async function getConfirmedRecords() {
+  const records = await readAllRaw();
+  return records.filter((r) => r.status === 'confirmed').sort((a, b) => a.id - b.id);
 }
 
-async function getByOrderId(orderId) {
+async function getById(id) {
   const records = await readAllRaw();
-  return records.find((r) => r.razorpay_order_id === orderId) || null;
-}
-
-async function getPaidRecords() {
-  const records = await readAllRaw();
-  return records.filter((r) => r.status === 'paid').sort((a, b) => a.id - b.id);
+  return records.find((r) => String(r.id) === String(id)) || null;
 }
 
 async function readAll() {
@@ -136,8 +125,7 @@ async function readAll() {
 
 module.exports = {
   addRecord,
-  updateRecordByOrderId,
-  getByOrderId,
-  getPaidRecords,
+  getConfirmedRecords,
+  getById,
   readAll,
 };

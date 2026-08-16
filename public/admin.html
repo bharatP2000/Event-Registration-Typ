@@ -203,24 +203,18 @@
       <h1 id="dash-title">Registrations</h1>
       <div class="top-actions">
         <button id="refresh-btn">&#8635; Refresh</button>
-        <a id="export-link" class="export" href="#">&#8681; Export paid (Excel)</a>
+        <a id="export-link" class="export" href="#">&#8681; Export (Excel)</a>
       </div>
     </div>
 
     <div class="stats">
-      <div class="stat"><div class="n" id="stat-total">&mdash;</div><div class="l">Total submissions</div></div>
-      <div class="stat"><div class="n" id="stat-paid">&mdash;</div><div class="l">Paid / confirmed</div></div>
-      <div class="stat"><div class="n" id="stat-pending">&mdash;</div><div class="l">Started, unpaid</div></div>
+      <div class="stat"><div class="n" id="stat-total">&mdash;</div><div class="l">Total registrations</div></div>
+      <div class="stat"><div class="n" id="stat-paid">&mdash;</div><div class="l">Confirmed</div></div>
       <div class="stat"><div class="n" id="stat-revenue">&mdash;</div><div class="l">Revenue collected</div></div>
     </div>
 
     <div class="filters">
       <input type="text" id="search" placeholder="Search by name or mobile number&hellip;" />
-      <select id="status-filter">
-        <option value="">All statuses</option>
-        <option value="paid">Paid</option>
-        <option value="created">Unpaid</option>
-      </select>
       <select id="area-filter"><option value="">All areas</option></select>
       <select id="member-of-filter">
         <option value="">All Member Of</option>
@@ -240,12 +234,9 @@
             <th>Mobile</th>
             <th>Area</th>
             <th>Member Of</th>
-            <th>Status</th>
             <th>Amount</th>
-            <th>Payment ID</th>
-            <th>Order ID</th>
+            <th>Screenshot</th>
             <th>Registered at</th>
-            <th>Paid at</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -266,7 +257,6 @@
   const emptyEl = document.getElementById('empty');
   const errEl = document.getElementById('err');
   const searchEl = document.getElementById('search');
-  const statusFilterEl = document.getElementById('status-filter');
   const areaFilterEl = document.getElementById('area-filter');
   const memberOfFilterEl = document.getElementById('member-of-filter');
 
@@ -302,8 +292,7 @@
 
       document.getElementById('dash-title').textContent = data.eventName + ' — Registrations';
       document.getElementById('stat-total').textContent = data.total;
-      document.getElementById('stat-paid').textContent = data.paidCount;
-      document.getElementById('stat-pending').textContent = data.pendingCount;
+      document.getElementById('stat-paid').textContent = data.confirmedCount;
       document.getElementById('stat-revenue').textContent = '\u20B9' + data.totalRevenue.toLocaleString('en-IN');
       document.getElementById('export-link').href = '/api/export?key=' + encodeURIComponent(ADMIN_KEY);
 
@@ -323,12 +312,10 @@
 
   function renderRows() {
     const q = searchEl.value.trim().toLowerCase();
-    const statusFilter = statusFilterEl.value;
     const areaFilter = areaFilterEl.value;
     const memberOfFilter = memberOfFilterEl.value;
 
     const filtered = allRecords.filter((r) => {
-      if (statusFilter && r.status !== statusFilter) return false;
       if (areaFilter && r.area !== areaFilter) return false;
       if (memberOfFilter && r.memberOf !== memberOfFilter) return false;
       if (q && !((r.name || '').toLowerCase().includes(q) || (r.mobile || '').includes(q))) return false;
@@ -349,12 +336,9 @@
         <td>${escapeHtml(r.mobile)}</td>
         <td>${escapeHtml(r.area)}</td>
         <td>${escapeHtml(r.memberOf)}</td>
-        <td><span class="badge ${r.status === 'paid' ? 'paid' : 'created'}">${escapeHtml(r.status)}</span></td>
         <td>&#8377;${escapeHtml(r.amount_inr)}</td>
-        <td>${escapeHtml(r.razorpay_payment_id || '—')}</td>
-        <td>${escapeHtml(r.razorpay_order_id || '—')}</td>
+        <td><a href="/api/admin/screenshot/${escapeHtml(r.id)}?key=${encodeURIComponent(ADMIN_KEY)}" target="_blank" class="btn" style="width:auto;padding:5px 10px;font-size:12px;display:inline-block;">View</a></td>
         <td>${fmtDate(r.created_at)}</td>
-        <td>${fmtDate(r.paid_at)}</td>
       </tr>
     `).join('');
   }
@@ -377,7 +361,6 @@
 
   document.getElementById('refresh-btn').addEventListener('click', loadData);
   searchEl.addEventListener('input', renderRows);
-  statusFilterEl.addEventListener('change', renderRows);
   areaFilterEl.addEventListener('change', renderRows);
   memberOfFilterEl.addEventListener('change', renderRows);
 

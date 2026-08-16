@@ -68,12 +68,25 @@
 
         <div class="perforation"></div>
 
+        <div class="qr-block">
+          <div class="amount-label">Scan &amp; pay registration fee</div>
+          <div class="amount" id="amount-display">&#8377;&mdash;</div>
+          <img class="qr-image" src="assets/payment-qr.jpeg" alt="UPI QR code for payment" />
+          <p class="qr-note" id="upi-id-note"></p>
+          <p class="qr-note">Scan with any UPI app (GPay, PhonePe, Paytm, etc.), then upload a screenshot of the successful payment below.</p>
+        </div>
+
+        <div class="field ticket-body" style="margin-bottom: 0;">
+          <label for="screenshot">Payment screenshot</label>
+          <input type="file" id="screenshot" name="screenshot" accept="image/*" required />
+          <div class="field-error" id="err-screenshot"></div>
+        </div>
+
+        <div class="perforation"></div>
+
         <div class="stub">
-          <div>
-            <div class="amount-label">Registration fee</div>
-            <div class="amount" id="amount-display">&#8377;&mdash;</div>
-          </div>
-          <button type="submit" id="pay-btn">Register &amp; Pay</button>
+          <div class="amount-label">Once uploaded, tap submit to confirm</div>
+          <button type="submit" id="pay-btn">Submit Registration</button>
         </div>
       </form>
 
@@ -91,11 +104,10 @@
         <p class="confirm">Please share this screen screenshot here:</p>
         <p><a href="https://chat.whatsapp.com/I3NVin7wE9A0v1UaXPcAAh?s=cl&p=a&ilr=4" target="_blank">Join the WhatsApp group</a></p>
         <!-- <p class="confirm-email-note" id="confirm-email-note"></p> -->
-        <div class="ref" id="confirm-ref"></div>
       </div>
     </div>
 
-    <footer class="note">Payments are processed securely by Razorpay. Your card and bank details never touch this server.</footer>
+    <footer class="note">Keep your payment screenshot for reference. Registrations are confirmed once submitted.</footer>
 
     
     <div class="org-strip">
@@ -107,7 +119,6 @@
 
   <footer class="note">&copy; 2026 All rights reserved. Developed &amp; maintained by Bharat Baid &mdash; 8100081890</footer>
 
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -1,9 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const crypto = require('crypto');
 const path = require('path');
-const Razorpay = require('razorpay');
+const multer = require('multer');
 const ExcelJS = require('exceljs');
 const storage = require('./storage');
 
@@ -22,6 +21,8 @@ const EVENT_GUIDANCE = process.env.EVENT_GUIDANCE || '';
 const EVENT_ORGANIZER = process.env.EVENT_ORGANIZER || '';
 const EVENT_TAGLINE = process.env.EVENT_TAGLINE || '';
 const ADMIN_EXPORT_KEY = process.env.ADMIN_EXPORT_KEY || 'change-me-please';
+const UPI_ID = process.env.UPI_ID || '';
+const UPI_PAYEE_NAME = process.env.UPI_PAYEE_NAME || '';
 
 const EVENT_AREAS = (
   process.env.EVENT_AREAS ||
@@ -31,19 +32,23 @@ const EVENT_AREAS = (
   .map((a) => a.trim())
   .filter(Boolean);
 
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  console.warn(
-    '[warning] RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are not set. Copy .env.example to .env and fill in your keys.'
-  );
-}
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
 const MOBILE_REGEX = /^[6-9]\d{9}$/;
 const MEMBER_OF_OPTIONS = ['TYP', 'TKM'];
+
+// Screenshots are kept in memory only long enough to base64-encode them into
+// the registration record itself, so they persist through the same storage
+// backend (Redis or the local JSON file) as everything else — no separate
+// uploads folder that would be lost on redeploy.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are accepted for the payment screenshot.'));
+    }
+    cb(null, true);
+  },
+});
 
 // ---- Public config ----
 app.get('/api/config', (req, res) => {
@@ -57,139 +62,105 @@ app.get('/api/config', (req, res) => {
     feeInr: EVENT_FEE_INR,
     areas: EVENT_AREAS,
     memberOfOptions: MEMBER_OF_OPTIONS,
-    razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
+    upiId: UPI_ID,
+    upiPayeeName: UPI_PAYEE_NAME,
   });
 });
 
-// ---- Step 1: Create registration + Razorpay order ----
-app.post('/api/register', async (req, res) => {
-  try {
-    const { name, mobile, area, memberOf } = req.body || {};
-
-    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+// ---- Register: form fields + payment screenshot, in one step ----
+app.post('/api/register', (req, res) => {
+  upload.single('screenshot')(req, res, async (uploadErr) => {
+    if (uploadErr) {
       return res.status(400).json({
-        error: 'Please enter a valid name.',
+        error: uploadErr.message || 'Could not process the uploaded screenshot.',
       });
     }
 
-    if (!mobile || !MOBILE_REGEX.test(String(mobile).trim())) {
-      return res.status(400).json({
-        error: 'Please enter a valid 10-digit mobile number.',
-      });
-    }
+    try {
+      const { name, mobile, area, memberOf } = req.body || {};
 
-    if (!area || !EVENT_AREAS.includes(area)) {
-      return res.status(400).json({
-        error: 'Please select a valid area.',
-      });
-    }
+      if (!name || typeof name !== 'string' || name.trim().length < 2) {
+        return res.status(400).json({
+          error: 'Please enter a valid name.',
+        });
+      }
 
-    if (!memberOf || !MEMBER_OF_OPTIONS.includes(memberOf)) {
-      return res.status(400).json({
-        error: 'Please select Member Of.',
-      });
-    }
+      if (!mobile || !MOBILE_REGEX.test(String(mobile).trim())) {
+        return res.status(400).json({
+          error: 'Please enter a valid 10-digit mobile number.',
+        });
+      }
 
-    const amountPaise = Math.round(EVENT_FEE_INR * 100);
+      if (!area || !EVENT_AREAS.includes(area)) {
+        return res.status(400).json({
+          error: 'Please select a valid area.',
+        });
+      }
 
-    const order = await razorpay.orders.create({
-      amount: amountPaise,
-      currency: 'INR',
-      receipt: `reg_${Date.now()}`,
-      notes: {
+      if (!memberOf || !MEMBER_OF_OPTIONS.includes(memberOf)) {
+        return res.status(400).json({
+          error: 'Please select Member Of.',
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          error: 'Please upload a screenshot of your payment.',
+        });
+      }
+
+      const screenshotDataUrl =
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+      const record = await storage.addRecord({
         name: name.trim(),
         mobile: mobile.trim(),
         area,
         memberOf,
-      },
-    });
+        amount_inr: EVENT_FEE_INR,
+        screenshot: screenshotDataUrl,
+        status: 'confirmed',
+        created_at: new Date().toISOString(),
+      });
 
-    await storage.addRecord({
-      name: name.trim(),
-      mobile: mobile.trim(),
-      area,
-      memberOf,
-      amount_inr: EVENT_FEE_INR,
-      razorpay_order_id: order.id,
-      razorpay_payment_id: null,
-      status: 'created',
-      created_at: new Date().toISOString(),
-      paid_at: null,
-    });
-
-    res.json({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID,
-      eventName: EVENT_NAME,
-    });
-  } catch (err) {
-    console.error('register error:', err);
-
-    res.status(500).json({
-      error: 'Could not start payment. Please try again.',
-    });
-  }
+      res.json({
+        success: true,
+        registration: {
+          id: record.id,
+          name: record.name,
+          area: record.area,
+          memberOf: record.memberOf,
+        },
+      });
+    } catch (err) {
+      console.error('register error:', err);
+      res.status(500).json({
+        error: 'Could not save your registration. Please try again.',
+      });
+    }
+  });
 });
 
-// ---- Step 2: Verify payment ----
-app.post('/api/verify', async (req, res) => {
+// ---- Admin: view a single screenshot ----
+app.get('/api/admin/screenshot/:id', async (req, res) => {
+  if (req.query.key !== ADMIN_EXPORT_KEY) {
+    return res.status(403).send('Forbidden: invalid or missing admin key.');
+  }
+
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body || {};
-
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature
-    ) {
-      return res.status(400).json({
-        error: 'Missing payment details.',
-      });
+    const record = await storage.getById(req.params.id);
+    if (!record || !record.screenshot) {
+      return res.status(404).send('Screenshot not found.');
     }
 
-    const existing = await storage.getByOrderId(razorpay_order_id);
+    const match = /^data:(.+);base64,(.*)$/.exec(record.screenshot);
+    if (!match) return res.status(404).send('Screenshot not found.');
 
-    if (!existing) {
-      return res.status(404).json({
-        error: 'Registration not found for this order.',
-      });
-    }
-
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({
-        error: 'Payment verification failed. Please contact support.',
-      });
-    }
-
-    const updated = await storage.updateRecordByOrderId(
-      razorpay_order_id,
-      {
-        status: 'paid',
-        razorpay_payment_id,
-        paid_at: new Date().toISOString(),
-      }
-    );
-
-    res.json({
-      success: true,
-      registration: updated,
-    });
+    res.setHeader('Content-Type', match[1]);
+    res.send(Buffer.from(match[2], 'base64'));
   } catch (err) {
-    console.error('verify error:', err);
-
-    res.status(500).json({
-      error: 'Could not verify payment.',
-    });
+    console.error('screenshot error:', err);
+    res.status(500).send('Could not load screenshot.');
   }
 });
 
@@ -202,7 +173,8 @@ app.get('/api/export', async (req, res) => {
       );
     }
 
-    const records = await storage.getPaidRecords();
+    const records = await storage.getConfirmedRecords();
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Registrations');
@@ -214,9 +186,8 @@ app.get('/api/export', async (req, res) => {
       { header: 'Area', key: 'area', width: 20 },
       { header: 'Member Of', key: 'memberOf', width: 14 },
       { header: 'Amount (INR)', key: 'amount_inr', width: 14 },
-      { header: 'Payment ID', key: 'razorpay_payment_id', width: 26 },
-      { header: 'Order ID', key: 'razorpay_order_id', width: 26 },
-      { header: 'Paid At', key: 'paid_at', width: 24 },
+      { header: 'Screenshot Link', key: 'screenshot_link', width: 40 },
+      { header: 'Registered At', key: 'created_at', width: 24 },
     ];
 
     sheet.getRow(1).font = {
@@ -224,7 +195,16 @@ app.get('/api/export', async (req, res) => {
     };
 
     records.forEach((r) => {
-      sheet.addRow(r);
+      sheet.addRow({
+        id: r.id,
+        name: r.name,
+        mobile: r.mobile,
+        area: r.area,
+        memberOf: r.memberOf,
+        amount_inr: r.amount_inr,
+        screenshot_link: `${baseUrl}/api/admin/screenshot/${r.id}?key=${encodeURIComponent(ADMIN_EXPORT_KEY)}`,
+        created_at: r.created_at,
+      });
     });
 
     res.setHeader(
@@ -245,22 +225,25 @@ app.get('/api/export', async (req, res) => {
   }
 });
 
-// ---- Admin: JSON data for the dashboard (all statuses, not just paid) ----
+// ---- Admin: JSON data for the dashboard ----
 app.get('/api/admin/registrations', async (req, res) => {
   if (req.query.key !== ADMIN_EXPORT_KEY) {
     return res.status(403).json({ error: 'Forbidden: invalid or missing admin key.' });
   }
 
   try {
-    const records = (await storage.readAll()).sort((a, b) => b.id - a.id);
-    const paid = records.filter((r) => r.status === 'paid');
+    const all = (await storage.readAll()).sort((a, b) => b.id - a.id);
+    const confirmed = all.filter((r) => r.status === 'confirmed');
+
+    // Screenshots are left out of the list payload (they can be large) —
+    // the dashboard fetches them individually via /api/admin/screenshot/:id.
+    const records = all.map(({ screenshot, ...rest }) => rest);
 
     res.json({
       eventName: EVENT_NAME,
-      total: records.length,
-      paidCount: paid.length,
-      pendingCount: records.length - paid.length,
-      totalRevenue: paid.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
+      total: all.length,
+      confirmedCount: confirmed.length,
+      totalRevenue: confirmed.reduce((sum, r) => sum + (Number(r.amount_inr) || 0), 0),
       areas: EVENT_AREAS,
       records,
     });
