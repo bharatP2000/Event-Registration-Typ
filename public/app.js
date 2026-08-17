@@ -418,27 +418,32 @@
       });
       const nameBottom = nameY - nameSize * 1.12 + nameSize * 0.35;
 
-      // सान्निध्य — spiritual guidance line, wraps to fit
       const sannidhyaLabel = '\u0938\u093e\u0928\u094d\u0928\u093f\u0927\u094d\u092f';
-      const sannidhyaText =
-        '\u092f\u0941\u0917\u092a\u094d\u0930\u0927\u093e\u0928 \u0906\u091a\u093e\u0930\u094d\u092f \u0936\u094d\u0930\u0940 \u092e\u0939\u093e\u0936\u094d\u0930\u092e\u0923 \u091c\u0940 \u0915\u0947 \u0938\u0941\u0936\u093f\u0937\u094d\u092f ' +
-        '\u092e\u0941\u0928\u093f \u0936\u094d\u0930\u0940 \u091c\u093f\u0928\u0947\u0936 \u0915\u0941\u092e\u093e\u0930 \u091c\u0940 \u0920\u093e\u0923\u093e -3';
       const devanagariFont = 'Inter, "Noto Sans Devanagari", sans-serif';
 
       const sannidhyaLabelY = nameBottom + 40;
+
+      // Label
       ctx.fillStyle = '#a97c2f';
       ctx.font = '700 18px ' + devanagariFont;
       ctx.fillText(sannidhyaLabel, W / 2, sannidhyaLabelY);
 
-      ctx.font = '600 28px ' + devanagariFont;
-      const sannidhyaLines = wrapLines(ctx, sannidhyaText, 780);
+      // First line — larger + bold
+      const sannidhyaLine1 =
+        '\u092f\u0941\u0917\u092a\u094d\u0930\u0927\u093e\u0928 \u0906\u091a\u093e\u0930\u094d\u092f \u0936\u094d\u0930\u0940 \u092e\u0939\u093e\u0936\u094d\u0930\u092e\u0923 \u091c\u0940';
+
       ctx.fillStyle = '#6b4a1e';
-      let sannidhyaY = sannidhyaLabelY + 36;
-      sannidhyaLines.forEach((line) => {
-        ctx.fillText(line, W / 2, sannidhyaY);
-        sannidhyaY += 30;
-      });
-      const sannidhyaBottom = sannidhyaY - 30 + 10;
+      ctx.font = '700 32px ' + devanagariFont;
+      ctx.fillText(sannidhyaLine1, W / 2, sannidhyaLabelY + 42);
+
+      // Second line
+      const sannidhyaLine2 =
+        '\u092e\u0941\u0928\u093f \u0936\u094d\u0930\u0940 \u091c\u093f\u0928\u0947\u0936 \u0915\u0941\u092e\u093e\u0930 \u091c\u0940 \u0920\u093e\u0923\u093e -3';
+
+      ctx.font = '600 28px ' + devanagariFont;
+      ctx.fillText(sannidhyaLine2, W / 2, sannidhyaLabelY + 76);
+
+      const sannidhyaBottom = sannidhyaLabelY + 86;
 
       // "Presented by" credit line
       let creditBottom = sannidhyaBottom;
@@ -480,7 +485,7 @@
 
       // Simple event details — date/time and venue side by side, no seat/zone grid
       const showtime = [CONFIG && CONFIG.eventDate, CONFIG && CONFIG.eventTime].filter(Boolean).join(' \u2022 ');
-      const venue = 'Yogkshem Vihar, Shyam Garden, Salkia School Road, Howrah - 711106';
+      const venue = 'Yogkshem Vihar, Shyam Garden,\nSalkia School Road, Howrah - 711106';
       let detailY = detailDividerY + 56;
 
       if (showtime) {
@@ -499,21 +504,35 @@
         ctx.font = '700 20px Inter, sans-serif';
         ctx.fillText('V E N U E', W / 2, detailY);
 
+        const venueLines = venue.split('\n');
+
         let venueSize = 22;
-        let venueLines = [venue];
         const venueMaxWidth = 780;
+
+        // Reduce font size if any line is too wide
         while (venueSize > 16) {
           ctx.font = '700 ' + venueSize + 'px Fraunces, serif';
-          venueLines = wrapLines(ctx, venue, venueMaxWidth);
-          if (venueLines.length <= 2 && venueLines.every((l) => ctx.measureText(l).width <= venueMaxWidth)) break;
+
+          if (
+            venueLines.every(
+              (line) => ctx.measureText(line).width <= venueMaxWidth
+            )
+          ) {
+            break;
+          }
+
           venueSize -= 1;
         }
+
         ctx.fillStyle = '#5a3a12';
         ctx.font = '700 ' + venueSize + 'px Fraunces, serif';
+
         let venueY = detailY + 34;
+        const venueLineHeight = venueSize * 1.25;
+
         venueLines.forEach((line) => {
           ctx.fillText(line, W / 2, venueY);
-          venueY += venueSize * 1.2;
+          venueY += venueLineHeight;
         });
       }
 
