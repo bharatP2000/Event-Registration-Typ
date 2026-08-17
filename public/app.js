@@ -391,7 +391,7 @@
       ctx.font = '700 19px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText('Y O U   A R E   I N V I T E D', W / 2, cursorY);
+      ctx.fillText('I  A M  C O M I N G', W / 2, cursorY);
       cursorY += 46;
 
       // Event name (autofit, wraps up to 2 lines)
@@ -466,7 +466,7 @@
       const guestY = dividerY + 78;
       ctx.fillStyle = '#a97c2f';
       ctx.font = '700 17px Inter, sans-serif';
-      ctx.fillText('G U E S T', W / 2, guestY);
+      ctx.fillText('M E M B E R', W / 2, guestY);
       const guestFit = fitSingleLine(ctx, registration.name || '\u2014', 860, 52, 30, '700', 'Fraunces, serif');
       ctx.fillStyle = '#5a3a12';
       ctx.font = '700 ' + guestFit.size + 'px Fraunces, serif';
@@ -475,7 +475,7 @@
       let afterGuestY = guestY + 96;
       if (registration.area) {
         ctx.fillStyle = '#a9863f';
-        ctx.font = '600 18px Inter, sans-serif';
+        ctx.font = '800 20px Inter, sans-serif';
         ctx.fillText('From ' + registration.area, W / 2, afterGuestY);
         afterGuestY += 40;
       }
