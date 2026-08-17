@@ -427,10 +427,10 @@
 
       const sannidhyaLabelY = nameBottom + 40;
       ctx.fillStyle = '#a97c2f';
-      ctx.font = '700 15px ' + devanagariFont;
+      ctx.font = '700 18px ' + devanagariFont;
       ctx.fillText(sannidhyaLabel, W / 2, sannidhyaLabelY);
 
-      ctx.font = '600 22px ' + devanagariFont;
+      ctx.font = '600 28px ' + devanagariFont;
       const sannidhyaLines = wrapLines(ctx, sannidhyaText, 780);
       ctx.fillStyle = '#6b4a1e';
       let sannidhyaY = sannidhyaLabelY + 36;
@@ -496,7 +496,7 @@
 
       if (venue) {
         ctx.fillStyle = '#a97c2f';
-        ctx.font = '700 16px Inter, sans-serif';
+        ctx.font = '700 20px Inter, sans-serif';
         ctx.fillText('V E N U E', W / 2, detailY);
 
         let venueSize = 22;
