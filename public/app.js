@@ -333,7 +333,7 @@
     try {
       passStatus.textContent = '';
       const W = 1080;
-      const H = 1080;
+      const H = 1260;
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
@@ -418,10 +418,32 @@
       });
       const nameBottom = nameY - nameSize * 1.12 + nameSize * 0.35;
 
+      // सान्निध्य — spiritual guidance line, wraps to fit
+      const sannidhyaLabel = '\u0938\u093e\u0928\u094d\u0928\u093f\u0927\u094d\u092f';
+      const sannidhyaText =
+        '\u092f\u0941\u0917\u092a\u094d\u0930\u0927\u093e\u0928 \u0906\u091a\u093e\u0930\u094d\u092f \u0936\u094d\u0930\u0940 \u092e\u0939\u093e\u0936\u094d\u0930\u092e\u0923 \u091c\u0940 \u0915\u0947 \u0938\u0941\u0936\u093f\u0937\u094d\u092f ' +
+        '\u092e\u0941\u0928\u093f \u0936\u094d\u0930\u0940 \u091c\u093f\u0928\u0947\u0936 \u0915\u0941\u092e\u093e\u0930 \u091c\u0940 \u0920\u093e\u0923\u093e -3';
+      const devanagariFont = 'Inter, "Noto Sans Devanagari", sans-serif';
+
+      const sannidhyaLabelY = nameBottom + 40;
+      ctx.fillStyle = '#a97c2f';
+      ctx.font = '700 15px ' + devanagariFont;
+      ctx.fillText(sannidhyaLabel, W / 2, sannidhyaLabelY);
+
+      ctx.font = '600 22px ' + devanagariFont;
+      const sannidhyaLines = wrapLines(ctx, sannidhyaText, 780);
+      ctx.fillStyle = '#6b4a1e';
+      let sannidhyaY = sannidhyaLabelY + 36;
+      sannidhyaLines.forEach((line) => {
+        ctx.fillText(line, W / 2, sannidhyaY);
+        sannidhyaY += 30;
+      });
+      const sannidhyaBottom = sannidhyaY - 30 + 10;
+
       // "Presented by" credit line
-      let creditBottom = nameBottom;
+      let creditBottom = sannidhyaBottom;
       if (organiser) {
-        const creditY = nameBottom + 40;
+        const creditY = sannidhyaBottom + 34;
         ctx.fillStyle = '#a97c2f';
         ctx.font = '600 15px Inter, sans-serif';
         ctx.fillText('P R E S E N T E D   B Y', W / 2, creditY);
@@ -445,12 +467,20 @@
       ctx.font = '700 ' + guestFit.size + 'px Fraunces, serif';
       ctx.fillText(guestFit.text, W / 2, guestY + 58);
 
-      const detailDividerY = guestY + 96;
+      let afterGuestY = guestY + 96;
+      if (registration.area) {
+        ctx.fillStyle = '#a9863f';
+        ctx.font = '600 18px Inter, sans-serif';
+        ctx.fillText('From ' + registration.area, W / 2, afterGuestY);
+        afterGuestY += 40;
+      }
+
+      const detailDividerY = afterGuestY;
       drawDashedDivider(ctx, 130, W - 130, detailDividerY, 'rgba(169,124,47,0.28)');
 
       // Simple event details — date/time and venue side by side, no seat/zone grid
       const showtime = [CONFIG && CONFIG.eventDate, CONFIG && CONFIG.eventTime].filter(Boolean).join(' \u2022 ');
-      const venue = (CONFIG && CONFIG.eventVenue) || registration.area || '';
+      const venue = 'Yogkshem Vihar, Shyam Garden, Salkia School Road, Howrah - 711106';
       let detailY = detailDividerY + 56;
 
       if (showtime) {
@@ -468,10 +498,23 @@
         ctx.fillStyle = '#a97c2f';
         ctx.font = '700 16px Inter, sans-serif';
         ctx.fillText('V E N U E', W / 2, detailY);
-        const fit = fitSingleLine(ctx, venue, 760, 30, 18, '700', 'Fraunces, serif');
+
+        let venueSize = 22;
+        let venueLines = [venue];
+        const venueMaxWidth = 780;
+        while (venueSize > 16) {
+          ctx.font = '700 ' + venueSize + 'px Fraunces, serif';
+          venueLines = wrapLines(ctx, venue, venueMaxWidth);
+          if (venueLines.length <= 2 && venueLines.every((l) => ctx.measureText(l).width <= venueMaxWidth)) break;
+          venueSize -= 1;
+        }
         ctx.fillStyle = '#5a3a12';
-        ctx.font = '700 ' + fit.size + 'px Fraunces, serif';
-        ctx.fillText(fit.text, W / 2, detailY + 38);
+        ctx.font = '700 ' + venueSize + 'px Fraunces, serif';
+        let venueY = detailY + 34;
+        venueLines.forEach((line) => {
+          ctx.fillText(line, W / 2, venueY);
+          venueY += venueSize * 1.2;
+        });
       }
 
       // Footer — soft closing note, with a small reference ID (not styled as a ticket seat)
@@ -494,6 +537,7 @@
       passStatus.textContent = 'Could not generate your pass image. You can still take a screenshot of this page.';
     }
   }
+
   if (passDownloadBtn) {
     passDownloadBtn.addEventListener('click', () => {
       if (!passBlobData) return;
