@@ -343,6 +343,61 @@ h1.event-name {
 .confirm-row span { color: var(--ink-soft); }
 .confirm-row strong { color: var(--ink); font-weight: 700; }
 
+/* -- Shareable event pass -- */
+.pass-block {
+  display: none;
+  margin: 4px 0 22px;
+}
+.pass-block.show { display: block; }
+.pass-preview-wrap {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--gold-line);
+  box-shadow: 0 14px 32px rgba(122, 20, 37, 0.18), 0 2px 8px rgba(58, 36, 21, 0.1);
+  margin-bottom: 14px;
+  background: #16050a;
+}
+.pass-preview-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.pass-actions {
+  display: flex;
+  gap: 10px;
+}
+.pass-btn {
+  flex: 1;
+  padding: 13px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+.pass-btn-maroon {
+  color: #fff8ea;
+  background: linear-gradient(135deg, var(--maroon-bright), var(--maroon-deep));
+  box-shadow: 0 8px 18px rgba(122, 20, 37, 0.3);
+}
+.pass-btn-gold {
+  color: var(--maroon-deep);
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+  box-shadow: 0 8px 18px rgba(182, 134, 44, 0.3);
+}
+.pass-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.pass-btn:active:not(:disabled) { transform: translateY(0); }
+.pass-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.pass-status {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  text-align: center;
+  margin: 10px 0 0;
+  min-height: 14px;
+}
+
 .confirm-email-note {
   font-size: 13px;
   color: var(--ink-soft);
