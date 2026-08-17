@@ -46,43 +46,45 @@
   // (GPay, PhonePe, Paytm, BHIM, etc.) registers this scheme, so opening it
   // on a phone shows the OS "choose an app" chooser with the amount and
   // payee already filled in.
-  function buildUpiUrl(cfg) {
-    if (!cfg || !cfg.upiId) return null;
-    const params = ['pa=' + encodeURIComponent(cfg.upiId)];
-    if (cfg.upiPayeeName) params.push('pn=' + encodeURIComponent(cfg.upiPayeeName));
-    const amount = Number(cfg.feeInr);
-    if (amount > 0) params.push('am=' + encodeURIComponent(amount.toFixed(2)));
-    params.push('cu=INR');
-    params.push('tn=' + encodeURIComponent((cfg.eventName || 'Event Registration') + ' registration fee'));
-    return 'upi://pay?' + params.join('&');
-  }
+
+  // function buildUpiUrl(cfg) {
+  //   if (!cfg || !cfg.upiId) return null;
+  //   const params = ['pa=' + encodeURIComponent(cfg.upiId)];
+  //   if (cfg.upiPayeeName) params.push('pn=' + encodeURIComponent(cfg.upiPayeeName));
+  //   const amount = Number(cfg.feeInr);
+  //   if (amount > 0) params.push('am=' + encodeURIComponent(amount.toFixed(2)));
+  //   params.push('cu=INR');
+  //   params.push('tn=' + encodeURIComponent((cfg.eventName || 'Event Registration') + ' registration fee'));
+  //   return 'upi://pay?' + params.join('&');
+  // }
 
   // Makes the QR image itself act as a "pay now" trigger on phones that
   // have a UPI app installed. Desktop clicks are harmless no-ops since no
   // app is registered to handle the upi:// scheme there — the QR image
   // still works as a normal scan target either way.
-  function setupQrTapToPay(cfg) {
-    const upiUrl = buildUpiUrl(cfg);
-    if (!upiUrl || !qrImage) return;
 
-    qrImage.style.cursor = 'pointer';
-    qrImage.setAttribute('role', 'button');
-    qrImage.setAttribute('tabindex', '0');
-    qrImage.setAttribute('aria-label', 'Pay with a UPI app');
+  // function setupQrTapToPay(cfg) {
+  //   const upiUrl = buildUpiUrl(cfg);
+  //   if (!upiUrl || !qrImage) return;
 
-    const trigger = () => {
-      window.location.href = upiUrl;
-    };
-    qrImage.addEventListener('click', trigger);
-    qrImage.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        trigger();
-      }
-    });
+  //   qrImage.style.cursor = 'pointer';
+  //   qrImage.setAttribute('role', 'button');
+  //   qrImage.setAttribute('tabindex', '0');
+  //   qrImage.setAttribute('aria-label', 'Pay with a UPI app');
 
-    if (qrTapHint) qrTapHint.style.display = 'block';
-  }
+  //   const trigger = () => {
+  //     window.location.href = upiUrl;
+  //   };
+  //   qrImage.addEventListener('click', trigger);
+  //   qrImage.addEventListener('keydown', (e) => {
+  //     if (e.key === 'Enter' || e.key === ' ') {
+  //       e.preventDefault();
+  //       trigger();
+  //     }
+  //   });
+
+  //   if (qrTapHint) qrTapHint.style.display = 'block';
+  // }
   function clearFieldErrors() {
     ['name', 'mobile', 'area', 'memberOf', 'screenshot'].forEach((id) => fieldError(id, ''));
   }
@@ -113,10 +115,10 @@
 
       amountDisplay.textContent = '\u20B9' + CONFIG.feeInr;
 
-      if (CONFIG.upiId) {
-        upiIdNote.textContent = 'UPI ID: ' + CONFIG.upiId + (CONFIG.upiPayeeName ? ' (' + CONFIG.upiPayeeName + ')' : '');
-      }
-      setupQrTapToPay(CONFIG);
+      // if (CONFIG.upiId) {
+      //   upiIdNote.textContent = 'UPI ID: ' + CONFIG.upiId + (CONFIG.upiPayeeName ? ' (' + CONFIG.upiPayeeName + ')' : '');
+      // }
+      // setupQrTapToPay(CONFIG);
 
       areaSelect.innerHTML = '<option value="" disabled selected>Select your area</option>';
       CONFIG.areas.forEach((area) => {
