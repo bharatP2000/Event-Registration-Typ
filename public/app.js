@@ -445,7 +445,19 @@
 
       const sannidhyaBottom = sannidhyaLabelY + 86;
 
-      
+      // "Presented by" credit line
+      let creditBottom = sannidhyaBottom;
+      if (organiser) {
+        const creditY = sannidhyaBottom + 34;
+        ctx.fillStyle = '#a97c2f';
+        ctx.font = '600 15px Inter, sans-serif';
+        ctx.fillText('P R E S E N T E D   B Y', W / 2, creditY);
+        const orgFit = fitSingleLine(ctx, organiser, 760, 24, 16, '600', 'Inter, sans-serif');
+        ctx.fillStyle = '#6b4a1e';
+        ctx.font = '600 ' + orgFit.size + 'px Inter, sans-serif';
+        ctx.fillText(orgFit.text, W / 2, creditY + 32);
+        creditBottom = creditY + 32;
+      }
 
       const dividerY = creditBottom + 44;
       drawDashedDivider(ctx, 130, W - 130, dividerY, 'rgba(169,124,47,0.35)');
@@ -522,21 +534,6 @@
           ctx.fillText(line, W / 2, venueY);
           venueY += venueLineHeight;
         });
-      }
-
-
-      // "Presented by" credit line
-      let creditBottom = sannidhyaBottom;
-      if (organiser) {
-        const creditY = sannidhyaBottom + 34;
-        ctx.fillStyle = '#a97c2f';
-        ctx.font = '600 15px Inter, sans-serif';
-        ctx.fillText('P R E S E N T E D   B Y', W / 2, creditY);
-        const orgFit = fitSingleLine(ctx, organiser, 760, 24, 16, '600', 'Inter, sans-serif');
-        ctx.fillStyle = '#6b4a1e';
-        ctx.font = '600 ' + orgFit.size + 'px Inter, sans-serif';
-        ctx.fillText(orgFit.text, W / 2, creditY + 32);
-        creditBottom = creditY + 32;
       }
 
       // Footer — soft closing note, with a small reference ID (not styled as a ticket seat)
