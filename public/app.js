@@ -333,7 +333,7 @@
     try {
       passStatus.textContent = '';
       const W = 1080;
-      const H = 1180;
+      const H = 1080;
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
@@ -354,57 +354,50 @@
 
       const eventName = (CONFIG && CONFIG.eventName) || 'Event Registration';
       const organiser = (CONFIG && CONFIG.eventOrganizer) || '';
-      const stubY = 860; // where the perforation splits the ticket from its tear-off stub
 
-      // Background — deep cinema-curtain gradient instead of parchment
+      // Background — warm ivory-to-saffron gradient, calm and devotional
       const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-      bgGrad.addColorStop(0, '#3a0f18');
-      bgGrad.addColorStop(0.55, '#280a11');
-      bgGrad.addColorStop(1, '#16050a');
+      bgGrad.addColorStop(0, '#fff6e5');
+      bgGrad.addColorStop(0.55, '#fdecc8');
+      bgGrad.addColorStop(1, '#f8dfa6');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, W, H);
 
-      const glow1 = ctx.createRadialGradient(W / 2, 40, 20, W / 2, 40, 620);
-      glow1.addColorStop(0, 'rgba(216, 169, 64, 0.16)');
+      const glow1 = ctx.createRadialGradient(W / 2, 60, 20, W / 2, 60, 640);
+      glow1.addColorStop(0, 'rgba(216, 169, 64, 0.14)');
       glow1.addColorStop(1, 'rgba(216, 169, 64, 0)');
       ctx.fillStyle = glow1;
       ctx.fillRect(0, 0, W, H);
 
-      // Stub tint, so the torn-off section reads visually distinct
-      ctx.fillStyle = 'rgba(216, 169, 64, 0.07)';
-      roundRectPath(ctx, 44, stubY, W - 88, H - 44 - stubY, 18);
-      ctx.fill();
-
-      // Outer frame
-      ctx.strokeStyle = '#d8a940';
-      ctx.lineWidth = 3;
-      roundRectPath(ctx, 30, 30, W - 60, H - 60, 22);
+      // Two nested borders — simple, elegant, no film-strip detailing
+      ctx.strokeStyle = '#c99a3e';
+      ctx.lineWidth = 2;
+      roundRectPath(ctx, 34, 34, W - 68, H - 68, 26);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(201,154,62,0.5)';
+      ctx.lineWidth = 1;
+      roundRectPath(ctx, 46, 46, W - 92, H - 92, 20);
       ctx.stroke();
 
-      // Film-strip sprocket holes running down both edges, the whole
-      // height of the ticket — the classic cinema-ticket tell.
-      for (let sy = 96; sy <= H - 96; sy += 46) {
-        punchHole(ctx, 66, sy, 9);
-        punchHole(ctx, W - 66, sy, 9);
-      }
-
-      // Header: small logo + "ADMIT ONE" eyebrow
+      // Header: logo + soft eyebrow
+      let cursorY = 96;
       if (logoImg) {
-        const logoW = 88;
+        const logoW = 100;
         const logoH = logoW * (logoImg.height / logoImg.width);
-        ctx.drawImage(logoImg, (W - logoW) / 2, 62, logoW, logoH);
+        ctx.drawImage(logoImg, (W - logoW) / 2, cursorY, logoW, logoH);
+        cursorY += logoH + 34;
       }
-      const eyebrowY = 190;
-      ctx.fillStyle = '#d8a940';
-      ctx.font = '700 21px Inter, sans-serif';
+      ctx.fillStyle = '#a97c2f';
+      ctx.font = '700 19px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      ctx.fillText('A D M I T   O N E', W / 2, eyebrowY);
+      ctx.fillText('Y O U   A R E   I N V I T E D', W / 2, cursorY);
+      cursorY += 46;
 
-      // Event name (autofit, wraps up to 2 lines) — the "feature" title
-      let nameSize = 60;
+      // Event name (autofit, wraps up to 2 lines)
+      let nameSize = 58;
       let nameLines = [eventName];
-      const nameMaxWidth = 800;
+      const nameMaxWidth = 820;
       while (nameSize > 32) {
         ctx.font = '800 ' + nameSize + 'px Fraunces, serif';
         nameLines = wrapLines(ctx, eventName, nameMaxWidth);
@@ -413,113 +406,78 @@
       }
       if (nameLines.length > 2) nameLines = nameLines.slice(0, 2);
 
-      const nameGrad = ctx.createLinearGradient(0, 230, 0, 230 + nameSize * nameLines.length * 1.15);
-      nameGrad.addColorStop(0, '#f7dfa0');
-      nameGrad.addColorStop(1, '#c99a3e');
+      const nameGrad = ctx.createLinearGradient(0, cursorY, 0, cursorY + nameSize * nameLines.length * 1.15);
+      nameGrad.addColorStop(0, '#a9631f');
+      nameGrad.addColorStop(1, '#7a4413');
       ctx.fillStyle = nameGrad;
       ctx.font = '800 ' + nameSize + 'px Fraunces, serif';
-      let nameY = 238 + nameSize * 0.7;
+      let nameY = cursorY + nameSize * 0.78;
       nameLines.forEach((line) => {
         ctx.fillText(line, W / 2, nameY);
         nameY += nameSize * 1.12;
       });
       const nameBottom = nameY - nameSize * 1.12 + nameSize * 0.35;
 
-      // "Presented by" credit line, like a film's production credit
+      // "Presented by" credit line
       let creditBottom = nameBottom;
       if (organiser) {
         const creditY = nameBottom + 40;
-        ctx.fillStyle = '#c9a355';
+        ctx.fillStyle = '#a97c2f';
         ctx.font = '600 15px Inter, sans-serif';
         ctx.fillText('P R E S E N T E D   B Y', W / 2, creditY);
         const orgFit = fitSingleLine(ctx, organiser, 760, 24, 16, '600', 'Inter, sans-serif');
-        ctx.fillStyle = '#f3e3c5';
+        ctx.fillStyle = '#6b4a1e';
         ctx.font = '600 ' + orgFit.size + 'px Inter, sans-serif';
         ctx.fillText(orgFit.text, W / 2, creditY + 32);
         creditBottom = creditY + 32;
       }
 
-      const dividerY = creditBottom + 34;
-      drawDashedDivider(ctx, 110, W - 110, dividerY, 'rgba(216,169,64,0.35)');
+      const dividerY = creditBottom + 44;
+      drawDashedDivider(ctx, 130, W - 130, dividerY, 'rgba(169,124,47,0.35)');
 
-      // Guest row, centered like a ticket's named admission line
-      const guestY = dividerY + 74;
-      ctx.fillStyle = '#c9a355';
+      // Guest name — the centrepiece of the pass
+      const guestY = dividerY + 78;
+      ctx.fillStyle = '#a97c2f';
       ctx.font = '700 17px Inter, sans-serif';
       ctx.fillText('G U E S T', W / 2, guestY);
-      const guestFit = fitSingleLine(ctx, registration.name || '\u2014', 840, 42, 26, '700', 'Fraunces, serif');
-      ctx.fillStyle = '#fdf6e3';
+      const guestFit = fitSingleLine(ctx, registration.name || '\u2014', 860, 52, 30, '700', 'Fraunces, serif');
+      ctx.fillStyle = '#5a3a12';
       ctx.font = '700 ' + guestFit.size + 'px Fraunces, serif';
-      ctx.fillText(guestFit.text, W / 2, guestY + 48);
+      ctx.fillText(guestFit.text, W / 2, guestY + 58);
 
-      const grid1DividerY = guestY + 78;
-      drawDashedDivider(ctx, 110, W - 110, grid1DividerY, 'rgba(216,169,64,0.28)');
+      const detailDividerY = guestY + 96;
+      drawDashedDivider(ctx, 130, W - 130, detailDividerY, 'rgba(169,124,47,0.28)');
 
-      // 2x2 seat-style detail grid: ZONE / CATEGORY, SHOWTIME / SEAT NO.
-      const colX = [110, 110 + 430];
-      const colW = 380;
-      const showtime = [CONFIG && CONFIG.eventDate, CONFIG && CONFIG.eventTime].filter(Boolean).join(' \u2022 ') || 'TBA';
-      const gridRows = [
-        [
-          ['ZONE', registration.area || '\u2014'],
-          ['CATEGORY', registration.memberOf || '\u2014'],
-        ],
-        [
-          ['SHOWTIME', showtime],
-          ['SEAT NO.', '#' + registration.id],
-        ],
-      ];
-      let gridY = grid1DividerY + 58;
-      gridRows.forEach((rowPair, rIdx) => {
-        rowPair.forEach(([label, value], cIdx) => {
-          ctx.textAlign = 'left';
-          ctx.fillStyle = '#c9a355';
-          ctx.font = '700 16px Inter, sans-serif';
-          ctx.fillText(label, colX[cIdx], gridY);
-          const fit = fitSingleLine(ctx, String(value), colW, 30, 17, '700', 'Fraunces, serif');
-          ctx.fillStyle = '#fdf6e3';
-          ctx.font = '700 ' + fit.size + 'px Fraunces, serif';
-          ctx.fillText(fit.text, colX[cIdx], gridY + 36);
-        });
-        gridY += 96;
-        if (rIdx === 0) drawDashedDivider(ctx, 110, W - 110, gridY - 26, 'rgba(216,169,64,0.2)');
-      });
+      // Simple event details — date/time and venue side by side, no seat/zone grid
+      const showtime = [CONFIG && CONFIG.eventDate, CONFIG && CONFIG.eventTime].filter(Boolean).join(' \u2022 ');
+      const venue = (CONFIG && CONFIG.eventVenue) || registration.area || '';
+      let detailY = detailDividerY + 56;
 
-      // Perforation — dashed tear line with a larger notch punched from
-      // each edge, like the stub a cinema usher tears off at the door.
-      ctx.textAlign = 'center';
-      drawDashedDivider(ctx, 96, W - 96, stubY, 'rgba(216,169,64,0.55)');
-      punchHole(ctx, 30, stubY, 26);
-      punchHole(ctx, W - 30, stubY, 26);
+      if (showtime) {
+        ctx.fillStyle = '#a97c2f';
+        ctx.font = '700 16px Inter, sans-serif';
+        ctx.fillText('D A T E   &   T I M E', W / 2, detailY);
+        const fit = fitSingleLine(ctx, showtime, 760, 30, 18, '700', 'Fraunces, serif');
+        ctx.fillStyle = '#5a3a12';
+        ctx.font = '700 ' + fit.size + 'px Fraunces, serif';
+        ctx.fillText(fit.text, W / 2, detailY + 38);
+        detailY += 96;
+      }
 
-      // Stub — mirrors the seat number and carries the scan barcode
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#c9a355';
-      ctx.font = '700 16px Inter, sans-serif';
-      ctx.fillText('SEAT NO.', 110, stubY + 62);
-      ctx.fillStyle = '#f7dfa0';
-      ctx.font = '800 46px Fraunces, serif';
-      ctx.fillText('#' + registration.id, 110, stubY + 108);
+      if (venue) {
+        ctx.fillStyle = '#a97c2f';
+        ctx.font = '700 16px Inter, sans-serif';
+        ctx.fillText('V E N U E', W / 2, detailY);
+        const fit = fitSingleLine(ctx, venue, 760, 30, 18, '700', 'Fraunces, serif');
+        ctx.fillStyle = '#5a3a12';
+        ctx.font = '700 ' + fit.size + 'px Fraunces, serif';
+        ctx.fillText(fit.text, W / 2, detailY + 38);
+      }
 
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#c9a355';
-      ctx.font = '700 16px Inter, sans-serif';
-      ctx.fillText('STATUS', W - 110, stubY + 62);
-      ctx.fillStyle = '#55c98a';
-      ctx.font = '800 30px Fraunces, serif';
-      ctx.fillText('CONFIRMED', W - 110, stubY + 100);
-
-      const barcodeY = stubY + 150;
-      drawBarcode(ctx, String(registration.id || registration.name || 'pass'), (W - 680) / 2, barcodeY, 680, 46, '#f3e3c5');
-
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#c9a355';
-      ctx.font = '600 14px Inter, sans-serif';
-      ctx.fillText('SCAN AT ENTRY \u2022 TICKET ' + registration.id, W / 2, barcodeY + 70);
-
-      ctx.fillStyle = '#8a6a3d';
+      // Footer — soft closing note, with a small reference ID (not styled as a ticket seat)
+      ctx.fillStyle = '#a9863f';
       ctx.font = '600 13px Inter, sans-serif';
-      ctx.fillText('Keep this ticket \u2022 Share to invite friends', W / 2, H - 58);
+      ctx.fillText('Pass ID: ' + registration.id + '   \u2022   Please keep this for entry', W / 2, H - 68);
 
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.95));
       if (!blob) throw new Error('toBlob failed');
@@ -536,7 +494,6 @@
       passStatus.textContent = 'Could not generate your pass image. You can still take a screenshot of this page.';
     }
   }
-
   if (passDownloadBtn) {
     passDownloadBtn.addEventListener('click', () => {
       if (!passBlobData) return;
