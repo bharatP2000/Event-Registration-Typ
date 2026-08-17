@@ -214,6 +214,14 @@ h1.event-name {
   max-width: 320px;
   line-height: 1.5;
 }
+.qr-tap-hint {
+  color: var(--gold);
+  font-weight: 600;
+}
+.qr-image:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
 
 .perforation {
   position: relative;
