@@ -41,7 +41,7 @@ const MEMBER_OF_OPTIONS = ['TYP', 'TKM'];
 // uploads folder that would be lost on redeploy.
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  limits: { fileSize: 20 * 1024 * 1024 }, // 5 MB
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
       return cb(new Error('Only image files are accepted for the payment screenshot.'));
