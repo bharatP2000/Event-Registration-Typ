@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 const EVENT_FEE_INR = Number(process.env.EVENT_FEE_INR || 499);
 const EVENT_NAME = process.env.EVENT_NAME || 'Event Registration';
 const EVENT_DATE = process.env.EVENT_DATE || '';
@@ -265,6 +265,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Event registration server running on port ${PORT}`);
 });
+
+server.keepAliveTimeout = 120000;
+server.headersTimeout = 120000;
