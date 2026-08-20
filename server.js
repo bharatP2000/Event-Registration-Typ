@@ -258,8 +258,13 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(
-    `Event registration server running at http://localhost:${PORT}`
-  );
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'event-registration',
+  });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Event registration server running on port ${PORT}`);
 });
